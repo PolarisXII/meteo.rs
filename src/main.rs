@@ -1,9 +1,11 @@
-use std::env;
-
+use dotenv::dotenv;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::prelude::*;
+use std::env;
+mod geocoding;
+mod weather;
 
 struct Handler;
 
@@ -36,16 +38,11 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
     // Configure the client with your Discord bot token in the environment.
-    let token = env::var(
-        "dcd5f9d02f70da8e703f77fe419191f421ad376c51cc67802aac5a3180bdcdc3
-    ",
-    )
-    .expect("Expected a token in the environment");
+    let token = env::var("METEORS_BOT_TOKEN").expect("Expected a token in the environment");
     // Set gateway intents, which decides what events the bot will be notified about
-    let intents = GatewayIntents::GUILD_MESSAGES
-        | GatewayIntents::DIRECT_MESSAGES
-        | GatewayIntents::MESSAGE_CONTENT;
+    let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
 
     // Create a new instance of the Client, logging in as a bot. This will automatically prepend
     // your bot token with "Bot ", which is a requirement by Discord for bot users.
@@ -54,6 +51,10 @@ async fn main() {
         .await
         .expect("Err creating client");
 
+    let location_res = geocoding::get_geolocation_from_city("Bondi Junction".to_string()).await;
+    let location = location_res.expect("Failed to get location from city");
+    let response = weather::get_weather_for_location(location.0, location.1).await;
+    println!("{:?}", response);
     // Finally, start a single shard, and start listening to events.
     //
     // Shards will automatically attempt to reconnect, and will perform exponential backoff until
