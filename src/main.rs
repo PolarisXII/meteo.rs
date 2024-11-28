@@ -53,8 +53,11 @@ async fn main() {
 
     let location_res = geocoding::get_geolocation_from_city("Bondi Junction".to_string()).await;
     let location = location_res.expect("Failed to get location from city");
-    let response = weather::get_weather_for_location(location.0, location.1).await;
-    println!("{:?}", response);
+    let weather_response = weather::get_weather_for_location(location.0, location.1)
+        .await
+        .expect("Failed to get weather for location");
+    println!("{:?}", weather_response);
+
     // Finally, start a single shard, and start listening to events.
     //
     // Shards will automatically attempt to reconnect, and will perform exponential backoff until
