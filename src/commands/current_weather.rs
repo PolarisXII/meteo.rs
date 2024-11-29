@@ -2,6 +2,7 @@ use crate::geocoding::get_geolocation_from_city;
 use crate::weather::get_current_weather_for_location;
 use serenity::builder::{CreateCommand, CreateCommandOption};
 use serenity::model::application::{CommandOptionType, ResolvedOption, ResolvedValue};
+
 pub async fn run(options: &[ResolvedOption<'_>]) -> String {
     if let Some(ResolvedOption {
         value: ResolvedValue::String(city),
@@ -19,7 +20,30 @@ pub async fn run(options: &[ResolvedOption<'_>]) -> String {
         }
 
         let current_weather = current_weather.unwrap();
-        return format!("The weather for {} is {:?}", city, current_weather);
+        let greeting = format!("Here's the current weather for {}: \n", city);
+        let description = format!(
+            "The weather is currently: {} - {}\n",
+            current_weather.weather[0].main, current_weather.weather[0].description,
+        );
+        let weather = format!(
+            "Temperature: {}°C\nFeels like: {}°C\nMin: {}°C\nMax: {}°C\nHumidity: {}%\n",
+            current_weather.main.temp,
+            current_weather.main.feels_like,
+            current_weather.main.temp_min,
+            current_weather.main.temp_max,
+            current_weather.main.humidity
+        );
+        let wind = format!("Wind speed: {}m/s\n", current_weather.wind.speed);
+        let rain = if let Some(rain) = &current_weather.rain {
+            format!(
+                "Rain in the last hour: {}mm\n",
+                rain.one_hour.unwrap_or(0.0)
+            )
+        } else {
+            "No rain in the last hour\n".to_string()
+        };
+
+        return format!("{}{}{}{}{}", greeting, description, weather, wind, rain);
     } else {
         return "City does not exist".to_string();
     }
