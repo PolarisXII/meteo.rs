@@ -21,7 +21,7 @@ pub struct WeatherDescription {
 
 #[derive(Deserialize, Debug)]
 pub struct Rain {
-    one_hour: f64,
+    one_hour: Option<f64>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -35,7 +35,7 @@ pub struct WeatherResponse {
     wind: Wind,
     rain: Option<Rain>,
 }
-pub async fn get_weather_for_location(
+pub async fn get_current_weather_for_location(
     lat: f64,
     long: f64,
 ) -> Result<WeatherResponse, Box<dyn Error>> {
